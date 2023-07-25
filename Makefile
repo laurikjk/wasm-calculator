@@ -1,5 +1,5 @@
 main:
-	clang --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export-all -o calculator.wasm calculator.c
+	clang --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o calculator.wasm calculator.c
 
 run: main
 	http-server -p 8080 --cors -c-1 .
