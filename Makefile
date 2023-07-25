@@ -1,17 +1,38 @@
+CC=clang
+CCFLAGS=--target=wasm32 -O3 -flto -nostdlib
+WASM_LDFLAGS=-Wl,--no-entry -Wl,--export-all -Wl,--lto-O3
+OUTFILE=calculator.wasm
+SOURCE=calculator.c
+
+SERVER=http-server
+SERVERFLAGS=-p 8080 --cors -c-1
+
+LLC=llc
+LLCFLAGS=-march=wasm32 -filetype=obj
+
+WASM_LD=wasm-ld
+WASM_LD_FLAGS=--no-entry --export-all
+
+WASM2WAT=wasm2wat
+WASM2WATFLAGS=-o calculator.wat
+
+CLEAN=rm -f
+
+.PHONY: main run intermediate wasm2wat clean
+
 main:
-	clang --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o calculator.wasm calculator.c
+	$(CC) $(CCFLAGS) $(WASM_LDFLAGS) -o $(OUTFILE) $(SOURCE)
 
 run: main
-	http-server -p 8080 --cors -c-1 .
+	$(SERVER) $(SERVERFLAGS) .
 
 intermediate: 
-	clang --target=wasm32 -emit-llvm -c -S  calculator.c
-	llc -march=wasm32 -filetype=obj calculator.ll
-	wasm-ld --no-entry --export-all -o calculator.wasm calculator.o
+	$(CC) --target=wasm32 -emit-llvm -c -S  $(SOURCE)
+	$(LLC) $(LLCFLAGS) calculator.ll
+	$(WASM_LD) $(WASM_LD_FLAGS) -o $(OUTFILE) calculator.o
 
 wasm2wat: main
-	wasm2wat calculator.wasm -o calculator.wat
+	$(WASM2WAT) $(OUTFILE) $(WASM2WATFLAGS)
 
 clean:
-	rm -f *.wasm *.o *.ll
-
+	$(CLEAN) *.wasm *.o *.ll
