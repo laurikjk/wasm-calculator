@@ -9,6 +9,9 @@ intermediate:
 	llc -march=wasm32 -filetype=obj calculator.ll
 	wasm-ld --no-entry --export-all -o calculator.wasm calculator.o
 
+wasm2wat: main
+	wasm2wat calculator.wasm -o calculator.wat
+
 clean:
 	rm -f *.wasm *.o *.ll
 
